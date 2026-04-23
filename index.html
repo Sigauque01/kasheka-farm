@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0b2010">
+<title>Kasheka Farm — Gestão de Vendas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #071609;
+  --bg2:       #0e2614;
+  --bg3:       #142e18;
+  --border:    rgba(76,175,80,.18);
+  --border2:   rgba(76,175,80,.32);
+  --green:     #4caf50;
+  --green-l:   #81c784;
+  --green-d:   #1b5e20;
+  --text:      #e8f5e9;
+  --text2:     #a5d6a7;
+  --muted:     #607d8b;
+  --amber:     #ffb74d;
+  --red:       #ef5350;
+  --blue:      #64b5f6;
+  --r:         14px;
+  --r-sm:      9px;
+  --shadow:    0 8px 32px rgba(0,0,0,.45);
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: inherit; }
+a { text-decoration: none; color: inherit; }
+
+/* ═══════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════ */
+.header {
+  position: sticky; top: 0; z-index: 80;
+  background: rgba(7,22,9,.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo-row { display: flex; align-items: center; gap: 12px; }
+.logo-icon {
+  width: 44px; height: 44px; border-radius: 13px;
+  background: linear-gradient(135deg, var(--green), var(--green-d));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 16px rgba(76,175,80,.4);
+  flex-shrink: 0;
+}
+.logo-text { font-family: 'Playfair Display', serif; font-size: 19px; color: var(--text2); line-height: 1.1; }
+.logo-sub  { font-size: 11px; color: var(--muted); letter-spacing: .6px; }
+.saved-badge {
+  font-size: 11px; padding: 4px 11px; border-radius: 99px;
+  background: rgba(76,175,80,.15); border: 1px solid var(--border2);
+  color: var(--green-l); opacity: 0; transition: opacity .4s;
+}
+.saved-badge.show { opacity: 1; }
+
+/* ═══════════════════════════════════════════════
+   NAV TABS
+═══════════════════════════════════════════════ */
+.nav {
+  display: flex; gap: 2px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(7,22,9,.7);
+  overflow-x: auto;
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 11px 14px;
+  border-radius: 10px 10px 0 0;
+  font-size: 13px; font-weight: 400; color: var(--muted);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap; transition: all .2s;
+}
+.nav-btn.active { color: var(--green-l); font-weight: 700; border-bottom-color: var(--green); background: rgba(76,175,80,.1); }
+.nav-btn svg { flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════════ */
+.content { padding: 18px 16px 90px; max-width: 780px; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ═══════════════════════════════════════════════
+   CARDS & LAYOUT
+═══════════════════════════════════════════════ */
+.card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-size: 11px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  margin-bottom: 12px;
+}
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stat-card {
+  border-radius: var(--r);
+  padding: 14px 16px;
+}
+.stat-val { font-size: 20px; font-weight: 700; letter-spacing: -.5px; line-height: 1; }
+.stat-lbl { font-size: 10px; color: var(--muted); margin-top: 5px; text-transform: uppercase; letter-spacing: .8px; }
+.c-green { background: rgba(76,175,80,.09); border: 1px solid rgba(76,175,80,.22); }
+.c-amber { background: rgba(255,183,77,.09); border: 1px solid rgba(255,183,77,.22); }
+.c-blue  { background: rgba(100,181,246,.09); border: 1px solid rgba(100,181,246,.22); }
+.c-light { background: rgba(129,199,132,.09); border: 1px solid rgba(129,199,132,.22); }
+.v-green { color: var(--green); }
+.v-amber { color: var(--amber); }
+.v-blue  { color: var(--blue); }
+.v-light { color: #a5d6a7; }
+
+/* ═══════════════════════════════════════════════
+   PRODUCT ROW
+═══════════════════════════════════════════════ */
+.prod-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+.prod-row:last-child { border-bottom: none; }
+.prod-info { display: flex; align-items: center; gap: 10px; }
+.prod-emoji { font-size: 24px; }
+.prod-name { font-size: 14px; font-weight: 700; color: var(--text2); }
+.prod-unit { font-size: 11px; color: var(--muted); }
+.prod-price { font-size: 15px; font-weight: 700; color: var(--green); }
+.icon-btn { color: var(--muted); padding: 5px; display: flex; align-items: center; border-radius: 7px; transition: color .15s, background .15s; }
+.icon-btn:hover { color: var(--text); background: rgba(255,255,255,.07); }
+
+/* ═══════════════════════════════════════════════
+   ORDER ROWS
+═══════════════════════════════════════════════ */
+.order-row {
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+.order-row:last-child { border-bottom: none; }
+.order-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.order-client { font-size: 14px; font-weight: 700; color: var(--text); }
+.order-date   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.order-total  { font-size: 15px; font-weight: 700; color: var(--green); flex-shrink: 0; }
+.order-tags   { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tag {
+  font-size: 11px; padding: 3px 9px; border-radius: 7px;
+  background: rgba(76,175,80,.1); border: 1px solid rgba(76,175,80,.2); color: var(--text2);
+}
+.order-notes { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 6px; }
+.order-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.badge {
+  font-size: 11px; padding: 4px 10px; border-radius: 99px;
+  font-weight: 700; cursor: pointer; transition: all .2s;
+}
+.badge-paid    { background: rgba(76,175,80,.16); border: 1px solid rgba(76,175,80,.35); color: var(--green-l); }
+.badge-pending { background: rgba(255,183,77,.14); border: 1px solid rgba(255,183,77,.3);  color: var(--amber); }
+.del-row { display: flex; align-items: center; gap: 6px; }
+.del-confirm-txt { font-size: 11px; color: #ef9a9a; }
+.del-yes { font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 7px; background: rgba(239,83,80,.2); border: 1px solid rgba(239,83,80,.4); color: #ef9a9a; }
+.del-no  { font-size: 11px; padding: 4px 9px; border-radius: 7px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); color: var(--muted); }
+
+/* ═══════════════════════════════════════════════
+   CHART
+═══════════════════════════════════════════════ */
+.chart-wrap { overflow-x: auto; padding-bottom: 4px; }
+.chart-sub  { text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+/* ═══════════════════════════════════════════════
+   REPORT ACTIONS
+═══════════════════════════════════════════════ */
+.action-row { display: flex; gap: 10px; margin-top: 12px; }
+.action-btn {
+  flex: 1; padding: 12px 8px; border-radius: 12px;
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: opacity .2s;
+}
+.action-btn:hover { opacity: .85; }
+.btn-pdf { background: rgba(239,83,80,.12); border: 1px solid rgba(239,83,80,.35); color: #ef9a9a; }
+.btn-wa  { background: rgba(76,175,80,.12); border: 1px solid rgba(76,175,80,.35); color: var(--green-l); text-decoration: none; }
+.report-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.report-tab {
+  flex: 1; padding: 10px; border-radius: 10px; border: none;
+  font-size: 13px; font-weight: 700; color: var(--muted);
+  background: rgba(255,255,255,.05); transition: all .2s;
+}
+.report-tab.active { background: linear-gradient(135deg, var(--green), var(--green-d)); color: #fff; }
+
+/* ═══════════════════════════════════════════════
+   FAB
+═══════════════════════════════════════════════ */
+.fab {
+  position: fixed; bottom: 24px; right: 20px; z-index: 70;
+  width: 56px; height: 56px; border-radius: 28px;
+  background: linear-gradient(135deg, var(--green), var(--green-d));
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px rgba(76,175,80,.55);
+  transition: transform .15s;
+}
+.fab:hover { transform: scale(1.07); }
+.fab.hidden { display: none; }
+
+/* ═══════════════════════════════════════════════
+   MODAL / SHEET
+═══════════════════════════════════════════════ */
+.overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.72); backdrop-filter: blur(6px);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+.sheet {
+  background: #0c2210;
+  border: 1px solid var(--border2);
+  border-radius: 24px 24px 0 0;
+  width: 100%; max-width: 520px; max-height: 94vh;
+  overflow-y: auto; padding: 24px 20px 40px;
+  transform: translateY(40px); transition: transform .28s cubic-bezier(.32,0,.15,1);
+}
+.overlay.open .sheet { transform: translateY(0); }
+.sheet-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; color: var(--text2); margin-bottom: 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+/* ═══════════════════════════════════════════════
+   FORM ELEMENTS
+═══════════════════════════════════════════════ */
+.form-lbl {
+  display: block; font-size: 11px; font-weight: 700; color: var(--green-l);
+  text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;
+}
+.form-inp {
+  width: 100%; padding: 12px 14px;
+  background: rgba(255,255,255,.06); border: 1px solid var(--border);
+  border-radius: var(--r-sm); color: var(--text); font-size: 15px;
+  outline: none; transition: border-color .2s;
+  margin-bottom: 14px;
+}
+.form-inp:focus { border-color: var(--green); }
+.form-inp::placeholder { color: var(--muted); }
+.pill-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+.pill {
+  padding: 8px 14px; border-radius: 99px; font-size: 13px;
+  border: 1px solid var(--border); color: var(--muted);
+  background: transparent; transition: all .2s;
+}
+.pill.active { border: 2px solid var(--green); background: rgba(76,175,80,.18); color: var(--green-l); font-weight: 700; }
+.item-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.item-name { flex: 1; font-size: 13px; color: var(--text2); }
+.item-emoji { font-size: 20px; }
+.inp-sm { width: 62px; padding: 9px 7px; text-align: center; }
+.inp-md { width: 96px; padding: 9px 10px; text-align: right; }
+.order-total-line { text-align: right; font-size: 18px; font-weight: 700; color: var(--green); margin-bottom: 14px; }
+.toggle-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: var(--r-sm);
+  background: rgba(255,255,255,.03); border: 1px solid var(--border);
+  cursor: pointer; margin-bottom: 14px; transition: all .2s;
+}
+.toggle-row.on { background: rgba(76,175,80,.1); border-color: var(--border2); }
+.toggle-track {
+  width: 40px; height: 22px; border-radius: 11px;
+  background: #37474f; position: relative; transition: background .2s; flex-shrink: 0;
+}
+.toggle-track.on { background: var(--green); }
+.toggle-dot {
+  position: absolute; width: 16px; height: 16px; border-radius: 8px;
+  background: #fff; top: 3px; left: 3px; transition: left .2s;
+}
+.toggle-track.on .toggle-dot { left: 21px; }
+.toggle-lbl { font-size: 14px; }
+.submit-btn {
+  width: 100%; padding: 14px; border-radius: var(--r);
+  background: linear-gradient(135deg, var(--green), var(--green-d));
+  color: #fff; font-size: 15px; font-weight: 700;
+  transition: opacity .2s;
+}
+.submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+.add-prod-btn {
+  width: 100%; padding: 12px; border-radius: var(--r-sm); margin-top: 10px;
+  background: rgba(76,175,80,.1); border: 1px solid var(--border2);
+  color: var(--green-l); font-size: 13px; font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════
+   EMPTY STATE & LOADER
+═══════════════════════════════════════════════ */
+.empty { text-align: center; padding: 36px 20px; color: var(--muted); }
+.empty-icon { font-size: 38px; margin-bottom: 10px; }
+.loader {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 40px; color: var(--green-l); font-size: 15px;
+}
+.spinner {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 3px solid rgba(76,175,80,.25); border-top-color: var(--green);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (min-width: 600px) {
+  .content { padding: 24px 28px 80px; }
+  .grid2 { grid-template-columns: repeat(4, 1fr); }
+  .stat-val { font-size: 18px; }
+  .sheet { border-radius: 18px; margin-bottom: 24px; }
+  .overlay { align-items: center; }
+}
+@media (max-width: 380px) {
+  .nav-btn { padding: 10px 10px; font-size: 12px; }
+  .card { padding: 14px 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="header">
+  <div class="logo-row">
+    <div class="logo-icon">🌿</div>
+    <div>
+      <div class="logo-text">Kasheka Farm</div>
+      <div class="logo-sub">Gestão de Vendas · Maputo</div>
+    </div>
+  </div>
+  <div class="saved-badge" id="savedBadge">✓ Guardado</div>
+</header>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav class="nav">
+  <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard',this)">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-linecap="round"/><path d="M9 22V12h6v10" stroke-linecap="round"/></svg>
+    Início
+  </button>
+  <button class="nav-btn" data-tab="pedidos" onclick="switchTab('pedidos',this)">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 9v6M18 9v6" stroke-linecap="round"/></svg>
+    Pedidos
+  </button>
+  <button class="nav-btn" data-tab="relatorios" onclick="switchTab('relatorios',this)">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-linecap="round"/><path d="M14 2v6h6M9 13h6M9 17h4" stroke-linecap="round"/></svg>
+    Relatórios
+  </button>
+</nav>
+
+<!-- ═══════════════ CONTENT ═══════════════ -->
+<main class="content">
+
+  <!-- DASHBOARD -->
+  <section id="tab-dashboard" class="tab-panel active">
+    <div class="grid2" id="statsGrid">
+      <div class="stat-card c-green"><div class="stat-val v-green" id="s-total">—</div><div class="stat-lbl">Vendas (mês)</div></div>
+      <div class="stat-card c-amber"><div class="stat-val v-amber" id="s-pend">—</div><div class="stat-lbl">Por receber</div></div>
+      <div class="stat-card c-blue"><div class="stat-val v-blue" id="s-rec">—</div><div class="stat-lbl">Recebido</div></div>
+      <div class="stat-card c-light"><div class="stat-val v-light" id="s-num">—</div><div class="stat-lbl">Pedidos (mês)</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📈 Tendência Semanal</div>
+      <div class="chart-wrap"><svg id="chartSvg" width="100%" viewBox="0 0 360 130" style="min-width:280px;display:block"></svg></div>
+      <div class="chart-sub">Últimas 8 semanas · barra verde = semana actual</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Produtos & Preços</div>
+      <div id="prodList"><div class="loader"><div class="spinner"></div>A carregar…</div></div>
+      <button class="add-prod-btn" onclick="openModal('modalProduto')">+ Adicionar Produto</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Últimos Pedidos</div>
+      <div id="recentOrders"><div class="loader"><div class="spinner"></div>A carregar…</div></div>
+    </div>
+  </section>
+
+  <!-- PEDIDOS -->
+  <section id="tab-pedidos" class="tab-panel">
+    <div class="card">
+      <div class="card-title" id="pedidosTitle">Todos os Pedidos</div>
+      <div id="allOrders"><div class="loader"><div class="spinner"></div>A carregar…</div></div>
+    </div>
+  </section>
+
+  <!-- RELATÓRIOS -->
+  <section id="tab-relatorios" class="tab-panel">
+    <div class="report-tabs">
+      <button class="report-tab active" onclick="setReportTipo('semanal',this)">📊 Semanal</button>
+      <button class="report-tab" onclick="setReportTipo('mensal',this)">📅 Mensal</button>
+    </div>
+    <div id="reportContent"><div class="loader"><div class="spinner"></div>A carregar…</div></div>
+  </section>
+
+</main>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openModal('modalPedido')" title="Novo Pedido">
+  <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+</button>
+
+<!-- ═══════════════ MODAL PEDIDO ═══════════════ -->
+<div class="overlay" id="modalPedido" onclick="overlayClick(event,'modalPedido')">
+  <div class="sheet">
+    <div class="sheet-title">
+      Registar Pedido
+      <button class="icon-btn" onclick="closeModal('modalPedido')">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <label class="form-lbl">Cliente</label>
+    <input class="form-inp" id="pCliente" placeholder="Nome do cliente ou mercado">
+
+    <label class="form-lbl">Data</label>
+    <input class="form-inp" id="pData" type="date">
+
+    <label class="form-lbl">Produtos</label>
+    <div class="pill-row" id="prodPills"></div>
+
+    <div id="itemsArea"></div>
+    <div class="order-total-line" id="totalLine" style="display:none"></div>
+
+    <label class="form-lbl">Notas (opcional)</label>
+    <input class="form-inp" id="pNotas" placeholder="Entrega, observações…">
+
+    <div class="toggle-row" id="pagoToggle" onclick="togglePago()">
+      <div class="toggle-track" id="pagoTrack"><div class="toggle-dot"></div></div>
+      <span class="toggle-lbl" id="pagoLbl">Marcar como pago</span>
+    </div>
+
+    <button class="submit-btn" id="submitPedido" onclick="submitPedido()" disabled>✓ Registar Pedido</button>
+  </div>
+</div>
+
+<!-- ═══════════════ MODAL PRODUTO ═══════════════ -->
+<div class="overlay" id="modalProduto" onclick="overlayClick(event,'modalProduto')">
+  <div class="sheet">
+    <div class="sheet-title">
+      <span id="prodModalTitle">Novo Produto</span>
+      <button class="icon-btn" onclick="closeModal('modalProduto')">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <input type="hidden" id="prodEditId">
+    <label class="form-lbl">Nome</label>
+    <input class="form-inp" id="prodNome" placeholder="Ex: Ovos Orgânicos">
+    <label class="form-lbl">Emoji</label>
+    <input class="form-inp" id="prodEmoji" placeholder="🥚" maxlength="4" style="font-size:22px;max-width:80px">
+    <label class="form-lbl">Unidade</label>
+    <input class="form-inp" id="prodUnidade" placeholder="dúzia, unid., kg…">
+    <label class="form-lbl">Preço padrão (MZN)</label>
+    <input class="form-inp" id="prodPreco" type="number" min="0" step="0.01" placeholder="0.00">
+    <button class="submit-btn" onclick="submitProduto()">💾 Guardar Produto</button>
+  </div>
+</div>
+
+<!-- ═══════════════ SCRIPT ═══════════════ -->
+<script>
+// ── Config ────────────────────────────────────────────────────────────────
+// URL relativa — funciona em localhost, Railway, ou qualquer host
+const API = '/api';
+
+// ── State ─────────────────────────────────────────────────────────────────
+let produtos   = [];
+let pedidos    = [];
+let orderItems = {};   // { produtoId: { quantidade, preco_unit } }
+let pagoState  = false;
+let reportTipo = 'semanal';
+let reportData = null;
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+const fmt = n => Number(n||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' MT';
+const todayStr = () => new Date().toISOString().slice(0,10);
+const qs = id => document.getElementById(id);
+
+function showSaved() {
+  const b = qs('savedBadge');
+  b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 2000);
+}
+
+async function apiFetch(path, opts={}) {
+  // Normaliza os paths: /produtos.php → /produtos, etc.
+  const cleanPath = path.replace(/\.php/g,'').replace(/\?action=relatorio/,'').replace('/pedidos?action=relatorio','relatorio');
+  const res = await fetch(API + cleanPath, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
+  return json.data;
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  qs('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+  qs('fab').classList.toggle('hidden', tab === 'relatorios');
+  if (tab === 'relatorios') loadReport();
+  if (tab === 'pedidos')    renderAllOrders();
+}
+
+// ── Modal helpers ─────────────────────────────────────────────────────────
+function openModal(id) {
+  if (id === 'modalPedido') initOrderForm();
+  qs(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  qs(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+function overlayClick(e, id) {
+  if (e.target === qs(id)) closeModal(id);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// PRODUTOS
+// ════════════════════════════════════════════════════════════════════
+async function loadProdutos() {
+  produtos = await apiFetch('/produtos.php');
+  renderProdutos();
+  renderProdPills();
+}
+
+function renderProdutos() {
+  const el = qs('prodList');
+  if (!produtos.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📦</div>Sem produtos.</div>'; return; }
+  el.innerHTML = produtos.map(p => `
+    <div class="prod-row">
+      <div class="prod-info">
+        <span class="prod-emoji">${p.emoji}</span>
+        <div>
+          <div class="prod-name">${p.nome}</div>
+          <div class="prod-unit">por ${p.unidade}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="prod-price">${fmt(p.preco)}</div>
+        <button class="icon-btn" onclick="editProduto(${p.id})">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-linecap="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+function editProduto(id) {
+  const p = produtos.find(x => x.id == id);
+  if (!p) return;
+  qs('prodEditId').value   = p.id;
+  qs('prodNome').value     = p.nome;
+  qs('prodEmoji').value    = p.emoji;
+  qs('prodUnidade').value  = p.unidade;
+  qs('prodPreco').value    = p.preco;
+  qs('prodModalTitle').textContent = 'Editar Produto';
+  openModal('modalProduto');
+}
+
+async function submitProduto() {
+  const id    = qs('prodEditId').value;
+  const body  = {
+    nome:    qs('prodNome').value.trim(),
+    emoji:   qs('prodEmoji').value.trim() || '📦',
+    unidade: qs('prodUnidade').value.trim(),
+    preco:   parseFloat(qs('prodPreco').value) || 0,
+  };
+  if (!body.nome || !body.unidade) { alert('Preenche nome e unidade.'); return; }
+  if (id) {
+    await apiFetch('/produtos.php?id=' + id, { method: 'PUT', body: JSON.stringify(body) });
+  } else {
+    await apiFetch('/produtos.php', { method: 'POST', body: JSON.stringify(body) });
+  }
+  // reset form
+  ['prodEditId','prodNome','prodEmoji','prodUnidade','prodPreco'].forEach(f => qs(f).value = '');
+  qs('prodModalTitle').textContent = 'Novo Produto';
+  closeModal('modalProduto');
+  await loadProdutos();
+  showSaved();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// ORDER FORM
+// ════════════════════════════════════════════════════════════════════
+function renderProdPills() {
+  qs('prodPills').innerHTML = produtos.map(p =>
+    `<button class="pill" data-pid="${p.id}" onclick="toggleItem(${p.id})">${p.emoji} ${p.nome}</button>`
+  ).join('');
+}
+
+function initOrderForm() {
+  orderItems = {};
+  pagoState  = false;
+  qs('pCliente').value = '';
+  qs('pData').value    = todayStr();
+  qs('pNotas').value   = '';
+  qs('pagoToggle').classList.remove('on');
+  qs('pagoTrack').classList.remove('on');
+  qs('pagoLbl').textContent = 'Marcar como pago';
+  document.querySelectorAll('#prodPills .pill').forEach(p => p.classList.remove('active'));
+  renderItems();
+}
+
+function toggleItem(pid) {
+  const p = produtos.find(x => x.id == pid);
+  if (!p) return;
+  if (orderItems[pid]) {
+    delete orderItems[pid];
+    document.querySelector(`.pill[data-pid="${pid}"]`).classList.remove('active');
+  } else {
+    orderItems[pid] = { produto_id: pid, nome: p.nome, emoji: p.emoji, unidade: p.unidade, quantidade: 1, preco_unit: parseFloat(p.preco) };
+    document.querySelector(`.pill[data-pid="${pid}"]`).classList.add('active');
+  }
+  renderItems();
+}
+
+function renderItems() {
+  const items = Object.values(orderItems);
+  const area  = qs('itemsArea');
+  const totalEl = qs('totalLine');
+
+  if (!items.length) { area.innerHTML = ''; totalEl.style.display = 'none'; checkSubmit(); return; }
+
+  area.innerHTML = items.map(it => `
+    <div class="item-row">
+      <span class="item-emoji">${it.emoji}</span>
+      <span class="item-name">${it.nome}</span>
+      <input class="form-inp inp-sm" type="number" min="0.5" step="0.5" value="${it.quantidade}"
+        onchange="setItemQty(${it.produto_id}, this.value)" style="margin-bottom:0">
+      <span style="font-size:11px;color:var(--muted)">${it.unidade}</span>
+      <input class="form-inp inp-md" type="number" min="0" step="1" value="${it.preco_unit}"
+        onchange="setItemPrice(${it.produto_id}, this.value)" style="margin-bottom:0">
+      <button class="icon-btn" onclick="removeItem(${it.produto_id})">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>`).join('');
+
+  const total = items.reduce((s, it) => s + it.quantidade * it.preco_unit, 0);
+  totalEl.textContent = 'Total: ' + fmt(total);
+  totalEl.style.display = 'block';
+  checkSubmit();
+}
+
+function setItemQty(pid, v)   { if (orderItems[pid]) { orderItems[pid].quantidade = parseFloat(v)||1; renderItems(); } }
+function setItemPrice(pid, v) { if (orderItems[pid]) { orderItems[pid].preco_unit = parseFloat(v)||0; renderItems(); } }
+function removeItem(pid)      { delete orderItems[pid]; document.querySelector(`.pill[data-pid="${pid}"]`).classList.remove('active'); renderItems(); }
+
+function togglePago() {
+  pagoState = !pagoState;
+  qs('pagoToggle').classList.toggle('on', pagoState);
+  qs('pagoTrack').classList.toggle('on', pagoState);
+  qs('pagoLbl').textContent = pagoState ? '✓ Pago' : 'Marcar como pago';
+}
+
+function checkSubmit() {
+  const ok = qs('pCliente').value.trim() && Object.keys(orderItems).length > 0;
+  qs('submitPedido').disabled = !ok;
+}
+
+qs('pCliente').addEventListener('input', checkSubmit);
+
+async function submitPedido() {
+  const body = {
+    cliente:     qs('pCliente').value.trim(),
+    data_pedido: qs('pData').value || todayStr(),
+    pago:        pagoState ? 1 : 0,
+    notas:       qs('pNotas').value.trim(),
+    itens:       Object.values(orderItems),
+  };
+  qs('submitPedido').disabled = true;
+  try {
+    await apiFetch('/pedidos.php', { method: 'POST', body: JSON.stringify(body) });
+    closeModal('modalPedido');
+    showSaved();
+    await loadDashboard();
+    renderAllOrders();
+  } catch(e) {
+    alert('Erro: ' + e.message);
+  }
+  qs('submitPedido').disabled = false;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// PEDIDOS
+// ════════════════════════════════════════════════════════════════════
+async function loadPedidos() {
+  pedidos = await apiFetch('/pedidos.php');
+}
+
+function renderAllOrders() {
+  const el = qs('allOrders');
+  qs('pedidosTitle').textContent = `Todos os Pedidos (${pedidos.length})`;
+  if (!pedidos.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>Nenhum pedido registado ainda.</div>'; return; }
+  el.innerHTML = pedidos.map(o => orderCard(o, true)).join('');
+}
+
+function orderCard(o, showDel=false) {
+  const tags = (o.itens||[]).map(it => `<span class="tag">${it.emoji||''} ${it.quantidade} ${it.unidade||''} × ${fmt(it.preco_unit)}</span>`).join('');
+  const delHtml = showDel ? `
+    <div class="del-row" id="del-${o.id}">
+      <button class="icon-btn" onclick="startDel(${o.id})">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>` : '';
+  return `
+    <div class="order-row" id="order-${o.id}">
+      <div class="order-top">
+        <div>
+          <div class="order-client">${o.cliente}</div>
+          <div class="order-date">${o.data_pedido}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="order-total">${fmt(o.total)}</div>
+          ${delHtml}
+        </div>
+      </div>
+      ${tags ? `<div class="order-tags">${tags}</div>` : ''}
+      ${o.notas ? `<div class="order-notes">📝 ${o.notas}</div>` : ''}
+      <div class="order-footer">
+        <span class="badge ${o.pago==1?'badge-paid':'badge-pending'}" onclick="togglePaidOrder(${o.id},${o.pago})">
+          ${o.pago==1 ? '✓ Pago' : '⏳ Pendente — toca para marcar pago'}
+        </span>
+      </div>
+    </div>`;
+}
+
+function startDel(id) {
+  const row = qs('del-' + id);
+  row.innerHTML = `
+    <span class="del-confirm-txt">Apagar?</span>
+    <button class="del-yes" onclick="confirmDel(${id})">Sim</button>
+    <button class="del-no" onclick="cancelDel(${id})">Não</button>`;
+}
+function cancelDel(id) {
+  const row = qs('del-' + id);
+  row.innerHTML = `<button class="icon-btn" onclick="startDel(${id})">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>`;
+}
+async function confirmDel(id) {
+  await apiFetch('/pedidos.php?id=' + id, { method: 'DELETE' });
+  pedidos = pedidos.filter(p => p.id != id);
+  renderAllOrders();
+  await loadDashboard();
+  showSaved();
+}
+
+async function togglePaidOrder(id, currentPago) {
+  const newPago = currentPago == 1 ? 0 : 1;
+  await apiFetch('/pedidos.php?id=' + id, { method: 'PUT', body: JSON.stringify({ pago: newPago }) });
+  const idx = pedidos.findIndex(p => p.id == id);
+  if (idx !== -1) pedidos[idx].pago = newPago;
+  renderAllOrders();
+  await loadDashboard();
+  showSaved();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// DASHBOARD STATS
+// ════════════════════════════════════════════════════════════════════
+async function loadDashboard() {
+  await loadPedidos();
+
+  // Monthly stats
+  const thisMonth = new Date().toISOString().slice(0,7);
+  const month = pedidos.filter(p => p.data_pedido && p.data_pedido.startsWith(thisMonth));
+  const total   = month.reduce((s,p) => s + parseFloat(p.total||0), 0);
+  const pend    = month.filter(p => p.pago==0).reduce((s,p) => s + parseFloat(p.total||0), 0);
+  const rec     = total - pend;
+  qs('s-total').textContent = fmt(total);
+  qs('s-pend').textContent  = fmt(pend);
+  qs('s-rec').textContent   = fmt(rec);
+  qs('s-num').textContent   = month.length;
+
+  // Recent orders (last 5)
+  const recentEl = qs('recentOrders');
+  if (!pedidos.length) { recentEl.innerHTML = '<div class="empty"><div class="empty-icon">🛒</div>Sem pedidos. Clica no + para registar.</div>'; }
+  else recentEl.innerHTML = pedidos.slice(0,5).map(o => orderCard(o, false)).join('');
+
+  drawChart();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// CHART
+// ════════════════════════════════════════════════════════════════════
+function getWeekStart(dateStr) {
+  const dt  = new Date(dateStr + 'T00:00:00');
+  const day = dt.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  dt.setDate(dt.getDate() + diff);
+  return dt.toISOString().slice(0,10);
+}
+
+function drawChart() {
+  const svg = qs('chartSvg');
+  const W = 360, H = 130, padL = 8, padR = 8, padT = 18, padB = 30;
+  const iW = W - padL - padR;
+  const iH = H - padT - padB;
+
+  // last 8 weeks
+  const weeks = [];
+  for (let i = 7; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i*7);
+    weeks.push(getWeekStart(d.toISOString().slice(0,10)));
+  }
+  const unique = [...new Set(weeks)];
+  const thisWeek = getWeekStart(todayStr());
+
+  const data = unique.map(w => {
+    const next = new Date(w + 'T00:00:00'); next.setDate(next.getDate()+7);
+    const nStr = next.toISOString().slice(0,10);
+    const tot = pedidos.filter(p => p.data_pedido >= w && p.data_pedido < nStr)
+                       .reduce((s,p) => s + parseFloat(p.total||0), 0);
+    return { w, label: w.slice(5), total: tot, isCurrent: w === thisWeek };
+  });
+
+  const max = Math.max(...data.map(d => d.total), 1);
+  const barW = iW / data.length - 5;
+  const scaleY = v => padT + iH * (1 - v / max);
+
+  let html = '';
+  // grid
+  [0.25,0.5,0.75,1].forEach(r => {
+    const y = scaleY(max*r);
+    html += `<line x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}" stroke="rgba(76,175,80,.12)" stroke-width="1" stroke-dasharray="4 3"/>`;
+  });
+
+  data.forEach((d, i) => {
+    const x  = padL + i * (iW / data.length) + 2;
+    const y  = d.total > 0 ? scaleY(d.total) : H - padB - 2;
+    const bh = d.total > 0 ? H - padB - y : 2;
+    const fill = d.isCurrent ? '#4caf50' : 'rgba(76,175,80,.35)';
+    html += `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="3" fill="${fill}"/>`;
+    if (d.total > 0) {
+      const lbl = d.total >= 1000 ? (d.total/1000).toFixed(1)+'k' : Math.round(d.total);
+      html += `<text x="${x+barW/2}" y="${y-4}" text-anchor="middle" font-size="8" fill="#81c784" font-family="Lato,sans-serif">${lbl}</text>`;
+    }
+    html += `<text x="${x+barW/2}" y="${H-8}" text-anchor="middle" font-size="8" fill="#607d8b" font-family="Lato,sans-serif">${d.label}</text>`;
+  });
+
+  svg.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// RELATÓRIO
+// ════════════════════════════════════════════════════════════════════
+function setReportTipo(tipo, btn) {
+  reportTipo = tipo;
+  document.querySelectorAll('.report-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadReport();
+}
+
+async function loadReport() {
+  qs('reportContent').innerHTML = '<div class="loader"><div class="spinner"></div>A carregar…</div>';
+  reportData = await apiFetch(`/relatorio?tipo=${reportTipo}`);
+  renderReport();
+}
+
+function renderReport() {
+  const r = reportData;
+  const { label, totais, porProduto, tendencia } = r;
+
+  const prodRows = porProduto.map(p => `
+    <div class="prod-row">
+      <div class="prod-info">
+        <span class="prod-emoji">${p.emoji}</span>
+        <div>
+          <div class="prod-name">${p.nome}</div>
+          <div class="prod-unit">${p.qtd_total} ${p.unidade}(s)</div>
+        </div>
+      </div>
+      <div class="prod-price">${p.receita > 0 ? fmt(p.receita) : '—'}</div>
+    </div>`).join('');
+
+  // WhatsApp message
+  const linhas = [
+    `${reportTipo==='semanal'?'📊':'📅'} *Relatório ${reportTipo==='semanal'?'Semanal':'Mensal'} — Kasheka Farm*`,
+    `📅 ${label}`,``,
+    `💰 *Facturado:* ${fmt(totais.total)}`,
+    `✅ *Recebido:* ${fmt(totais.recebido)}`,
+    `⏳ *Por receber:* ${fmt(totais.pendente)}`,
+    `🛒 *Pedidos:* ${totais.num_pedidos}`,``,
+    `*Por produto:*`,
+    ...porProduto.filter(p => p.receita>0).map(p => `${p.emoji} ${p.nome}: ${p.qtd_total} ${p.unidade}(s) → ${fmt(p.receita)}`),
+    ``, `_Kasheka Farm · Gestão de Vendas · Maputo_ 🌿`
+  ];
+  const waLink = `https://wa.me/258846538367?text=${encodeURIComponent(linhas.join('\n'))}`;
+
+  qs('reportContent').innerHTML = `
+    <div class="card" style="background:rgba(76,175,80,.05)">
+      <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--text2);margin-bottom:4px">
+        Relatório ${reportTipo==='semanal'?'Semanal':'Mensal'}
+      </div>
+      <div style="font-size:11px;color:var(--green-l);margin-bottom:14px">${label} · ${totais.num_pedidos} pedidos</div>
+      <div class="grid2">
+        <div class="stat-card c-green"><div class="stat-val v-green">${fmt(totais.total)}</div><div class="stat-lbl">Facturado</div></div>
+        <div class="stat-card c-blue"><div class="stat-val v-blue">${fmt(totais.recebido)}</div><div class="stat-lbl">Recebido</div></div>
+        <div class="stat-card c-amber"><div class="stat-val v-amber">${fmt(totais.pendente)}</div><div class="stat-lbl">Por receber</div></div>
+        <div class="stat-card c-light"><div class="stat-val v-light">${totais.num_pedidos}</div><div class="stat-lbl">Pedidos</div></div>
+      </div>
+      <div class="action-row">
+        <button class="action-btn btn-pdf" onclick="printPDF()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          Exportar PDF
+        </button>
+        <a href="${waLink}" target="_blank" class="action-btn btn-wa">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          WhatsApp
+        </a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Por Produto</div>
+      ${prodRows}
+    </div>`;
+}
+
+function printPDF() {
+  if (!reportData) return;
+  const r = reportData;
+  const { label, totais, porProduto } = r;
+  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const now = new Date();
+
+  const rows = porProduto.map(p =>
+    `<tr><td>${p.emoji} ${p.nome}</td><td>${p.qtd_total} ${p.unidade}(s)</td><td style="text-align:right;font-weight:700;color:#2e7d32">${p.receita>0?fmt(p.receita):'—'}</td></tr>`
+  ).join('');
+
+  const html = `<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8">
+  <title>Kasheka Farm — Relatório ${label}</title>
+  <style>
+    body{font-family:Georgia,serif;color:#111;margin:36px;font-size:13px}
+    h1{color:#1b5e20;font-size:22px;margin-bottom:3px}
+    .sub{color:#555;font-size:12px;margin-bottom:26px}
+    .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px}
+    .box{border:1px solid #c8e6c9;border-radius:9px;padding:13px 15px;background:#f1f8e9}
+    .box.warn{background:#fff8e1;border-color:#ffe082}
+    .val{font-size:20px;font-weight:700;color:#2e7d32}
+    .lbl{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.8px;margin-top:4px}
+    table{width:100%;border-collapse:collapse;margin-bottom:22px}
+    th{background:#e8f5e9;color:#1b5e20;font-size:11px;text-transform:uppercase;letter-spacing:.8px;padding:8px 10px;text-align:left}
+    td{padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:12px}
+    h2{color:#1b5e20;font-size:14px;margin:22px 0 9px;border-bottom:2px solid #c8e6c9;padding-bottom:5px}
+    .footer{margin-top:36px;font-size:10px;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:10px}
+    @media print{body{margin:18px}}
+  </style></head><body>
+  <h1>🌿 Kasheka Farm — Relatório ${reportTipo==='semanal'?'Semanal':'Mensal'}</h1>
+  <div class="sub">Maputo, Moçambique &nbsp;|&nbsp; ${label} &nbsp;|&nbsp; Gerado em ${now.toLocaleString('pt-MZ')}</div>
+  <div class="grid">
+    <div class="box"><div class="val">${fmt(totais.total)}</div><div class="lbl">Total Facturado</div></div>
+    <div class="box"><div class="val">${fmt(totais.recebido)}</div><div class="lbl">Recebido</div></div>
+    <div class="box warn"><div class="val" style="color:#e65100">${fmt(totais.pendente)}</div><div class="lbl">Por Receber</div></div>
+  </div>
+  <h2>Por Produto</h2>
+  <table><thead><tr><th>Produto</th><th>Qtd Vendida</th><th style="text-align:right">Receita</th></tr></thead>
+  <tbody>${rows}</tbody></table>
+  <p style="font-size:12px;color:#555">Total de ${totais.num_pedidos} pedido(s) no período.</p>
+  <div class="footer">Kasheka Farm · Sistema de Gestão de Vendas · Maputo, Moçambique</div>
+  </body></html>`;
+
+  const w = window.open('','_blank');
+  if (!w) { alert('Permite pop-ups para gerar o PDF.'); return; }
+  w.document.write(html); w.document.close(); w.focus();
+  setTimeout(() => w.print(), 600);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════════
+(async function init() {
+  try {
+    await loadProdutos();
+    await loadDashboard();
+  } catch(e) {
+    console.error(e);
+    alert('Não foi possível ligar à base de dados.\nVerifica se o XAMPP está a correr e a base de dados está criada.');
+  }
+})();
+</script>
+</body>
+</html>
